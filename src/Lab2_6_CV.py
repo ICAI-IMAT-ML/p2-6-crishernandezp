@@ -1,3 +1,6 @@
+from sklearn.utils import shuffle
+import numpy as np
+
 def cross_validation(model, X, y, nFolds):
     """
     Perform cross-validation on a given machine learning model to evaluate its performance.
@@ -44,26 +47,28 @@ def cross_validation(model, X, y, nFolds):
         # Implement Leave One Out CV
         nFolds = X.shape[0]
 
-    # TODO: Calculate fold_size based on the number of folds
-    fold_size = None
-
-    # TODO: Initialize a list to store the accuracy values of the model for each fold
+    # Ensure data is shuffled consistently
+    indices = np.arange(X.shape[0])
+    
+    # Calculate fold_size based on the number of folds
+    fold_size = np.array_split(indices, nFolds)
+    
+    # Initialize a list to store the accuracy values of the model for each fold
     accuracy_scores = []
+    
+    for valid_indices in fold_size:
+        # Generate indices of samples for the training set for the fold
+        train_indices = np.concatenate([fold for fold in fold_size if not np.array_equal(fold, valid_indices)])
+        
+        # Split the dataset into training and validation
+        X_train, X_valid = X[train_indices], X[valid_indices]
+        y_train, y_valid = y[train_indices], y[valid_indices]
+        
+        # Train the model with the training set
+        model.fit(X_train, y_train)
 
-    for i in range(nFolds):
-        # TODO: Generate indices of samples for the validation set for the fold
-        valid_indices = None
+        # Calculate the accuracy of the model with the validation set and store it in accuracy_scores
+        accuracy_scores.append(model.score(X_valid, y_valid))
 
-        # TODO: Generate indices of samples for the training set for the fold
-        train_indices = None
-
-        # TODO: Split the dataset into training and validation
-        X_train, X_valid = None, None
-        y_train, y_valid = None, None
-
-        # TODO: Train the model with the training set
-
-        # TODO: Calculate the accuracy of the model with the validation set and store it in accuracy_scores
-
-    # TODO: Return the mean and standard deviation of the accuracy_scores
-    return None, None
+    # Return the mean and standard deviation of the accuracy_scores
+    return np.mean(accuracy_scores), np.std(accuracy_scores)
